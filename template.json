@@ -1,0 +1,7 @@
+{
+  "name": "Wails React TypeScript shadcn/ui",
+  "shortname": "wails-react-ts-shadcn-template",
+  "author": "Benjamin Raffetseder",
+  "description": "Wails v2 desktop starter with React, TypeScript, React Router, Tailwind CSS and shadcn/ui built on Base UI.",
+  "helpurl": "https://github.com/benjaminraffetseder/wails-react-ts-shadcn-template#readme"
+}

@@ -1,0 +1,27 @@
+{
+  "app": { "title": "Desktop-Vorlage", "browserPreview": "Browser-Vorschau" },
+  "common": { "close": "Schließen" },
+  "nav": {
+    "label": "Hauptnavigation",
+    "overview": "Übersicht",
+    "settings": "Einstellungen"
+  },
+  "greeting": {
+    "title": "Go-Verbindung",
+    "name": "Name",
+    "submit": "Begrüßen",
+    "pending": "Senden…",
+    "result": "Hallo, {{name}}!",
+    "emptyResult": "Hallo!",
+    "error": "Die Anfrage an Go ist fehlgeschlagen.",
+    "previewHint": "Starte <command>wails dev</command>, um Go zu verbinden."
+  },
+  "dialog": { "open": "Dialog öffnen", "title": "Dialog" },
+  "settings": {
+    "appearance": "Darstellung",
+    "themeLabel": "Farbschema",
+    "themes": { "light": "Hell", "dark": "Dunkel", "system": "System" },
+    "language": "Sprache"
+  },
+  "notFound": { "title": "Seite nicht gefunden", "back": "Zur Übersicht" }
+}

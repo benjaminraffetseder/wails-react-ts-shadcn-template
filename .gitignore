@@ -1,0 +1,20 @@
+# Generated frontend and desktop outputs
+node_modules/
+frontend/dist/
+frontend/package.json.md5
+frontend/wailsjs/
+build/bin/
+*.tsbuildinfo
+*.exe
+*.test
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.npmrc
+coverage/

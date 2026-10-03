@@ -1,0 +1,27 @@
+{
+  "app": { "title": "Desktop starter", "browserPreview": "Browser preview" },
+  "common": { "close": "Close" },
+  "nav": {
+    "label": "Main navigation",
+    "overview": "Overview",
+    "settings": "Settings"
+  },
+  "greeting": {
+    "title": "Go connection",
+    "name": "Name",
+    "submit": "Say hello",
+    "pending": "Sending…",
+    "result": "Hello, {{name}}!",
+    "emptyResult": "Hello, there!",
+    "error": "The request to Go failed.",
+    "previewHint": "Run <command>wails dev</command> to connect to Go."
+  },
+  "dialog": { "open": "Open dialog", "title": "Dialog" },
+  "settings": {
+    "appearance": "Appearance",
+    "themeLabel": "Color theme",
+    "themes": { "light": "Light", "dark": "Dark", "system": "System" },
+    "language": "Language"
+  },
+  "notFound": { "title": "Page not found", "back": "Back to overview" }
+}

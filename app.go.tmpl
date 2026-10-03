@@ -1,0 +1,29 @@
+package main
+
+import (
+	"context"
+	"strings"
+)
+
+// App owns the methods exposed to the frontend through generated Wails bindings.
+type App struct {
+	ctx context.Context
+}
+
+func NewApp() *App {
+	return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+}
+
+// Greeting carries data; the frontend owns localized messages.
+type Greeting struct {
+	Name string `json:"name"`
+}
+
+// Greet demonstrates a typed frontend-to-Go call. Replace it with your app's API.
+func (a *App) Greet(name string) Greeting {
+	return Greeting{Name: strings.TrimSpace(name)}
+}
