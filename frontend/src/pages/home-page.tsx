@@ -13,11 +13,14 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { greet, isDesktop, type Greeting } from "@/lib/backend"
+import { useDesktop } from "@/hooks/use-desktop"
 import { cn } from "@/lib/utils"
+import { Greet } from "@wails/app"
+import type { Greeting } from "@wails/models"
 
 export function HomePage() {
   const { t } = useTranslation()
+  const isDesktop = useDesktop()
   const [name, setName] = useState("")
   const [result, setResult] = useState<Greeting | null>(null)
   const [error, setError] = useState(false)
@@ -25,11 +28,12 @@ export function HomePage() {
 
   async function handleGreeting(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!isDesktop) return
     setPending(true)
     setResult(null)
     setError(false)
     try {
-      setResult(await greet(name))
+      setResult(await Greet(name))
     } catch {
       setError(true)
     } finally {

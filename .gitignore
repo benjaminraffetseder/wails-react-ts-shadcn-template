@@ -1,9 +1,10 @@
 # Generated frontend and desktop outputs
 node_modules/
 frontend/dist/
-frontend/package.json.md5
-frontend/wailsjs/
-build/bin/
+frontend/bindings/
+bin/
+.task/
+*.syso
 *.tsbuildinfo
 *.exe
 *.test

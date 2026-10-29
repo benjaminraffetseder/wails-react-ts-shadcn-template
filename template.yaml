@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://v3.wails.io/schemas/template.v3.json
+name: Wails React TypeScript shadcn/ui
+shortname: wails-react-ts-shadcn-template
+author: Benjamin Raffetseder
+description: Wails v3 desktop starter with React, TypeScript, React Router, Tailwind CSS and shadcn/ui built on Base UI.
+helpurl: https://github.com/benjaminraffetseder/wails-react-ts-shadcn-template#readme
+version: v0.1.0
+wailsVersion: 3
+typescript: true

@@ -1,21 +1,12 @@
 package main
 
-import (
-	"context"
-	"strings"
-)
+import "strings"
 
-// App owns the methods exposed to the frontend through generated Wails bindings.
-type App struct {
-	ctx context.Context
-}
+// App is a Wails service exposed to the frontend through generated bindings.
+type App struct{}
 
 func NewApp() *App {
 	return &App{}
-}
-
-func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
 }
 
 // Greeting carries data; the frontend owns localized messages.

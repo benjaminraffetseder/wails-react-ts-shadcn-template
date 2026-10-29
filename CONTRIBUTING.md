@@ -28,12 +28,13 @@ Each script generates an app in your temporary directory, validates the Base UI
 configuration, builds a native executable, and runs TypeScript, ESLint, Prettier,
 and Go checks.
 It prints the generated app path and preserves it so you can inspect it. Linux
-verification selects the WebKitGTK 4.1 build tag when those libraries are available.
-For explicit tags, use `WAILS_BUILD_TAGS=webkit2_41 ./scripts/verify-template.sh`.
+verification prefers GTK4 + WebKitGTK 6.0 and falls back to the `gtk3` build tag
+with GTK3 + WebKit2GTK 4.1. For explicit tags, use
+`WAILS_BUILD_TAGS=gtk3 ./scripts/verify-template.sh`.
 
-For UI changes, run `wails dev` in that generated app and check navigation,
+For UI changes, run `wails3 dev` in that generated app and check navigation,
 the Go greeting form, dialog keyboard controls and focus return, and theme
-persistence. If verification used build tags, pass the same tags to `wails dev`.
+persistence. If verification used build tags, pass the same tags to `wails3 dev`.
 For localized UI changes, check both English and German, language persistence after
 reload, dialog close labels, and the translated Go greeting. Update both locale
 JSON files when adding a translation key.

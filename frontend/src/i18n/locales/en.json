@@ -14,7 +14,7 @@
     "result": "Hello, {{name}}!",
     "emptyResult": "Hello, there!",
     "error": "The request to Go failed.",
-    "previewHint": "Run <command>wails dev</command> to connect to Go."
+    "previewHint": "Run <command>wails3 dev</command> to connect to Go."
   },
   "dialog": { "open": "Open dialog", "title": "Dialog" },
   "settings": {

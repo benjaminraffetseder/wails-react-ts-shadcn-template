@@ -14,7 +14,7 @@
     "result": "Hallo, {{name}}!",
     "emptyResult": "Hallo!",
     "error": "Die Anfrage an Go ist fehlgeschlagen.",
-    "previewHint": "Starte <command>wails dev</command>, um Go zu verbinden."
+    "previewHint": "Starte <command>wails3 dev</command>, um Go zu verbinden."
   },
   "dialog": { "open": "Dialog öffnen", "title": "Dialog" },
   "settings": {

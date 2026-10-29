@@ -1,0 +1,35 @@
+version: '3'
+
+vars:
+  APP_NAME: "{{.BinaryName}}"
+  BIN_DIR: bin
+  PACKAGE_MANAGER: npm
+  VITE_PORT: '{{.Opn}}.WAILS_VITE_PORT | default 9245{{.Cls}}'
+  GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: '{{.Opn}}.GOOS{{.Cls}}:build'
+
+  package:
+    summary: Packages the application
+    cmds:
+      - task: '{{.Opn}}.GOOS{{.Cls}}:package'
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: '{{.Opn}}.GOOS{{.Cls}}:run'
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.Opn}}.VITE_PORT{{.Cls}}

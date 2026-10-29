@@ -9,7 +9,7 @@ export default defineConfig([
   globalIgnores([
     "node_modules/",
     "dist/",
-    "wailsjs/",
+    "bindings/",
     "coverage/",
     "**/*.tsbuildinfo",
   ]),

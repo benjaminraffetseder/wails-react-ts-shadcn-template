@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { isDesktop } from "@/lib/backend"
+import { useDesktop } from "@/hooks/use-desktop"
 
 const navigation = [
   { to: "/", label: "nav.overview", icon: House },
@@ -13,6 +13,7 @@ const navigation = [
 
 export function AppLayout() {
   const { t } = useTranslation()
+  const isDesktop = useDesktop()
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-48 shrink-0 flex-col border-r bg-sidebar p-4 md:w-56">
