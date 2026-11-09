@@ -33,7 +33,7 @@ const pkg = read("frontend/package.json")
 const lock = read("frontend/package-lock.json")
 if (!config.style?.startsWith("base-")) throw new Error("shadcn must use a Base UI style.")
 if (!pkg.dependencies?.["@base-ui/react"]) throw new Error("Base UI dependency is missing.")
-if (pkg.dependencies?.["@wailsio/runtime"] !== "3.0.0") throw new Error("The Wails runtime must match the pinned Go dependency.")
+if (pkg.dependencies?.["@wailsio/runtime"] !== "3.1.0") throw new Error("The Wails runtime must match the pinned Go dependency.")
 if (Object.keys(lock.packages).some((name) => name.includes("radix-ui"))) {
   throw new Error("Radix dependencies must not be present in this Base UI template.")
 }

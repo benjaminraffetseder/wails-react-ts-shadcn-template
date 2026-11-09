@@ -1,6 +1,6 @@
 # Wails + React + TypeScript + shadcn/ui
 
-A reusable **Wails v3 custom template** for desktop apps. It includes React 19, TypeScript 6, Vite 8, React Router 8, Tailwind CSS 4, and shadcn/ui with Base UI primitives. The Go dependency and `@wailsio/runtime` are pinned to **3.0.0**.
+A reusable **Wails v3 custom template** for desktop apps. It includes React 19, TypeScript 6, Vite 8, React Router 8, Tailwind CSS 4, and shadcn/ui with Base UI primitives. The Go dependency and `@wailsio/runtime` are pinned to **3.1.0**.
 
 ![Generated template app in light mode with sidebar navigation and a Go greeting form.](docs/images/template-app-overview.png)
 
@@ -38,14 +38,14 @@ The repository's files are Wails template source. GitHub's **Use this template**
 ## Requirements
 
 - Go **1.26 or newer**
-- Node.js **24 or newer**, with npm (`.nvmrc` pins 24.21.0)
-- Wails **v3 CLI 3.0.0**
+- Node.js **26 or newer**, with npm (`.nvmrc` pins 26.13.0 LTS)
+- Wails **v3 CLI 3.1.0**
 - Your platform's native Wails dependencies
 
 Install the matching Wails v3 CLI:
 
 ```powershell
-go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
 ```
 
 Add Go's binary directory to your `PATH` if it is not already there. This is `GOBIN` when configured, otherwise the `bin` directory under `go env GOPATH` (normally `%USERPROFILE%\go\bin` on Windows or `~/go/bin` on macOS/Linux). Reopen your terminal after changing its persistent PATH, then run `wails3 doctor`.
@@ -106,7 +106,7 @@ npm run dev
 
 The last command previews the frontend in a browser. The greeting example requires `wails3 dev` or the packaged desktop app; plain Vite does not provide native methods. The `useDesktop` hook follows Wails' runtime initialization event, enabling the native form once the environment is ready. Checking for `window._wails` alone would also match browser previews.
 
-Wails 3.0.0 selects JavaScript bindings for community template paths without a `-ts` suffix. Those bindings carry JSDoc types; `allowJs` lets TypeScript infer the greeting model and method signatures. You can also generate `.ts` bindings explicitly with `wails3 generate bindings -ts`. The frontend imports work with either format. The Vite plugin from `@wailsio/runtime/plugins/vite` loads generated event bindings.
+Wails 3.1.0 selects JavaScript bindings for community template paths without a `-ts` suffix. Those bindings carry JSDoc types; `allowJs` lets TypeScript infer the greeting model and method signatures. You can also generate `.ts` bindings explicitly with `wails3 generate bindings -ts`. The frontend imports work with either format. The Vite plugin from `@wailsio/runtime/plugins/vite` loads generated event bindings.
 
 Run `npm run lint:fix` to apply ESLint fixes and `npm run format` to format frontend source, configs, styles, and locale JSON. ESLint uses `eslint.config.js`; Prettier uses `.prettierrc.json` and `.prettierignore`. Generated Wails bindings, build output, and dependencies are excluded from both tools, and Prettier also skips the generated npm lockfile. ESLint reports code issues while Prettier owns formatting; `eslint-config-prettier` disables conflicting style rules. Lint warnings fail the check.
 
@@ -184,7 +184,7 @@ Add a locale JSON file with the same keys, import it into `src/i18n/index.ts`, r
 
 Files with `.tmpl` in their names are processed by `wails3 init`, which removes `.tmpl` from the generated filenames; ordinary frontend files are copied. The Vite and TypeScript config templates interpolate the Go module path into the `@wails/` alias, so pages remain ordinary `.tsx` files with direct imports such as `@wails/app`. `gitignore.tmpl` supplies the generated app's `.gitignore`. Wails generates the platform build assets automatically during initialization.
 
-Keep `frontend/package-lock.json` synchronized whenever dependencies change. Make dependency changes in a generated app, then copy its updated `package.json` and `package-lock.json` back to the template. Keep the Go Wails dependency, CLI, and npm runtime on the same version. TypeScript 6 is used because the ESLint TypeScript parser currently supports versions below 6.1. Keep `node_modules`, `dist`, generated bindings, and built binaries out of the template source, since local template generation copies files even if Git ignores them.
+Keep `frontend/package-lock.json` synchronized whenever dependencies change. Make dependency changes in a generated app, then copy its updated `package.json` and `package-lock.json` back to the template. Keep the Go Wails dependency, CLI, and npm runtime on the same version. TypeScript 6.0.3 is used because [typescript-eslint currently supports versions below 6.1](https://typescript-eslint.io/users/dependency-versions/#typescript); TypeScript 7 requires a compatible parser release first. Keep `node_modules`, `dist`, generated bindings, and built binaries out of the template source, since local template generation copies files even if Git ignores them.
 
 This repository has no CI/CD pipelines or GitHub Actions workflows. Builds, linting, formatting checks, and template verification run manually on your machine. From a clean checkout, run the script for your platform after installing the prerequisites:
 

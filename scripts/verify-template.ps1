@@ -31,7 +31,7 @@ if (-not $taskConfig.style.StartsWith('base-')) { throw 'shadcn must use a Base 
 
 $taskPackage = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/package.json') -Raw | ConvertFrom-Json -AsHashtable
 if (-not $taskPackage.dependencies.ContainsKey('@base-ui/react')) { throw 'Base UI dependency is missing.' }
-if ($taskPackage.dependencies['@wailsio/runtime'] -ne '3.0.0') { throw 'The Wails runtime must match the pinned Go dependency.' }
+if ($taskPackage.dependencies['@wailsio/runtime'] -ne '3.1.0') { throw 'The Wails runtime must match the pinned Go dependency.' }
 
 $taskLock = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/package-lock.json') -Raw | ConvertFrom-Json -AsHashtable
 if (@($taskLock.packages.Keys | Where-Object { $_ -match 'radix-ui' }).Count -gt 0) {
