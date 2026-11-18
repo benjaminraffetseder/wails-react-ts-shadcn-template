@@ -1,27 +1,97 @@
 {
-  "app": { "title": "Desktop starter", "browserPreview": "Browser preview" },
-  "common": { "close": "Close" },
+  "app": {
+    "title": "Desktop starter",
+    "browserPreview": "Browser preview"
+  },
+  "common": {
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "details": "Details",
+    "retry": "Retry",
+    "unavailable": "Unavailable"
+  },
   "nav": {
     "label": "Main navigation",
     "overview": "Overview",
     "settings": "Settings"
   },
-  "greeting": {
-    "title": "Go connection",
-    "name": "Name",
-    "submit": "Say hello",
-    "pending": "Sending…",
-    "result": "Hello, {{name}}!",
-    "emptyResult": "Hello, there!",
-    "error": "The request to Go failed.",
-    "previewHint": "Run <command>wails3 dev</command> to connect to Go."
-  },
-  "dialog": { "open": "Open dialog", "title": "Dialog" },
   "settings": {
     "appearance": "Appearance",
     "themeLabel": "Color theme",
-    "themes": { "light": "Light", "dark": "Dark", "system": "System" },
-    "language": "Language"
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": "Language",
+    "saving": "Saving preferences…",
+    "native": "Preferences are stored by Go on this device.",
+    "preview": "Browser preview: preferences are stored only in this browser.",
+    "storage": "Preference storage",
+    "storageHint": "Reset restores the default theme and language. Invalid native files are backed up before recovery. Never store secrets in preferences.",
+    "reset": "Reset to defaults",
+    "about": "About",
+    "version": "Version {{version}}",
+    "embeddedVersion": "Version embedded in this native build.",
+    "packageVersion": "Version from the frontend package."
   },
-  "notFound": { "title": "Page not found", "back": "Back to overview" }
+  "window": {
+    "titlebar": "Window controls"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to overview"
+  },
+  "errors": {
+    "unavailable": "This action requires the Wails desktop app.",
+    "unsupported": "This capability is unavailable on this platform or in this build.",
+    "permission": "Permission was denied. Check the application permissions in your system settings.",
+    "busy": "Wait for the current action to finish.",
+    "operation": "The operation failed. Your last saved values are retained. See details and try again."
+  },
+  "commands": {
+    "title": "Command palette",
+    "description": "Search commands. Use the arrow keys to select and Enter to run.",
+    "search": "Search commands…",
+    "empty": "No commands found.",
+    "navigation": "Navigation",
+    "launcher": "Commands",
+    "running": "Running command…"
+  },
+  "desktop": {
+    "title": "Desktop integration",
+    "description": "Try native dialogs, clipboard, window controls and notifications.",
+    "preview": "Native actions are unavailable in browser preview. Run wails3 dev to try them.",
+    "openFile": "Open file",
+    "openFiles": "Open files",
+    "selectDirectory": "Choose folder",
+    "saveFile": "Save destination",
+    "clipboardText": "Selected path or clipboard text",
+    "cancelled": "Selection cancelled. No file was selected.",
+    "selected": "Selection ready. Copy the path below.",
+    "copy": "Copy text",
+    "copied": "Text copied.",
+    "readClipboard": "Read clipboard",
+    "read": "Clipboard read.",
+    "minimize": "Minimize",
+    "maximize": "Maximize / restore",
+    "notify": "Send notification",
+    "notificationTitle": "Desktop starter",
+    "notificationBody": "Your native notification is working.",
+    "notified": "Notification submitted to the operating system."
+  },
+  "items": {
+    "title": "SQLite example",
+    "description": "Local records owned by Go. Changes persist after restart.",
+    "preview": "SQLite runs in the native desktop app. Start wails3 dev to try this example.",
+    "newTitle": "New item title",
+    "add": "Add",
+    "empty": "No items yet.",
+    "itemTitle": "Title for item {{id}}",
+    "save": "Save title",
+    "complete": "Mark complete",
+    "completed": "Completed",
+    "delete": "Delete"
+  }
 }

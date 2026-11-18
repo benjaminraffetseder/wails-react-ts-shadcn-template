@@ -4,19 +4,29 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { HomePage } from "@/pages/home-page"
 import { SettingsPage } from "@/pages/settings-page"
 import { NotFoundPage } from "@/pages/not-found-page"
+import { AppSettingsProvider } from "@/components/app-settings-provider"
+import { CommandProvider } from "@/components/command-palette"
+import { appRoutes } from "@/lib/routes"
 
 export function App() {
   return (
-    <ThemeProvider>
-      <HashRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </HashRouter>
-    </ThemeProvider>
+    <AppSettingsProvider>
+      <ThemeProvider>
+        <HashRouter>
+          <CommandProvider>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route index element={<HomePage />} />
+                <Route
+                  path={appRoutes.settings.path}
+                  element={<SettingsPage />}
+                />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </CommandProvider>
+        </HashRouter>
+      </ThemeProvider>
+    </AppSettingsProvider>
   )
 }

@@ -1,59 +1,32 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react"
+import { useLayoutEffect, type ReactNode } from "react"
+import { useAppSettings } from "@/hooks/use-app-settings"
+import type { Theme } from "@/lib/app-settings-store"
 
-type Theme = "light" | "dark" | "system"
-type ThemeContextValue = { theme: Theme; setTheme: (theme: Theme) => void }
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
-const storageKey = "desktop-theme"
-
-function readTheme(): Theme {
-  try {
-    const saved = localStorage.getItem(storageKey)
-    if (saved === "light" || saved === "dark") return saved
-  } catch {
-    // Storage may be unavailable in a restricted webview.
-  }
-  return "system"
+export function applyTheme(theme: Theme) {
+  const dark =
+    theme === "dark" ||
+    (theme === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  document.documentElement.classList.toggle("dark", dark)
+  document.documentElement.style.colorScheme = dark ? "dark" : "light"
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, updateTheme] = useState<Theme>(readTheme)
-
-  useEffect(() => {
+  const { settings } = useAppSettings()
+  useLayoutEffect(() => {
+    const apply = () => applyTheme(settings.theme)
     const media = window.matchMedia("(prefers-color-scheme: dark)")
-    const apply = () => {
-      const dark = theme === "dark" || (theme === "system" && media.matches)
-      document.documentElement.classList.toggle("dark", dark)
-      document.documentElement.style.colorScheme = dark ? "dark" : "light"
-    }
     apply()
     media.addEventListener("change", apply)
     return () => media.removeEventListener("change", apply)
-  }, [theme])
-
-  function setTheme(value: Theme) {
-    try {
-      localStorage.setItem(storageKey, value)
-    } catch {
-      /* Keep in-memory preference. */
-    }
-    updateTheme(value)
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  }, [settings.theme])
+  return children
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
-  if (!context) throw new Error("useTheme must be used within ThemeProvider")
-  return context
+  const { settings, updateSettings } = useAppSettings()
+  return {
+    theme: settings.theme,
+    setTheme: (theme: Theme) => updateSettings({ theme }),
+  }
 }

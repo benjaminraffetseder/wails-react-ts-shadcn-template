@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Wails handles native dragging; controls remain interactive. */
+.window-titlebar {
+  --wails-draggable: drag;
+}
+.window-controls,
+.window-titlebar button {
+  --wails-draggable: no-drag;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -17,11 +17,13 @@ tasks:
   build:
     summary: Builds the application
     cmds:
+      - node scripts/sync-version.mjs
       - task: '{{.Opn}}.GOOS{{.Cls}}:build'
 
   package:
     summary: Packages the application
     cmds:
+      - node scripts/sync-version.mjs
       - task: '{{.Opn}}.GOOS{{.Cls}}:package'
 
   run:
@@ -32,4 +34,5 @@ tasks:
   dev:
     summary: Runs the application in development mode
     cmds:
+      - node scripts/sync-version.mjs
       - wails3 dev -config ./build/config.yml -port {{.Opn}}.VITE_PORT{{.Cls}}

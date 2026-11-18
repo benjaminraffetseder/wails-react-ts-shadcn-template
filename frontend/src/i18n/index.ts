@@ -8,30 +8,9 @@ export const languages = [
   { code: "de", label: "Deutsch" },
 ] as const
 
-const storageKey = "desktop-language"
-
-function supportedLanguage(value: string | null) {
-  const base = value?.toLowerCase().split("-")[0]
-  return languages.find(({ code }) => code === base)?.code
-}
-
-function initialLanguage() {
-  try {
-    const saved = supportedLanguage(localStorage.getItem(storageKey))
-    if (saved) return saved
-  } catch {
-    // Restricted webviews can disable storage; language switching still works.
-  }
-  for (const candidate of navigator.languages) {
-    const language = supportedLanguage(candidate)
-    if (language) return language
-  }
-  return "en"
-}
-
 void i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, de: { translation: de } },
-  lng: initialLanguage(),
+  lng: "en",
   supportedLngs: languages.map(({ code }) => code),
   fallbackLng: "en",
   initAsync: false,
@@ -39,6 +18,7 @@ void i18n.use(initReactI18next).init({
 })
 
 function updateDocument() {
+  if (typeof document === "undefined") return
   const language = i18n.resolvedLanguage ?? "en"
   document.documentElement.lang = language
   document.documentElement.dir = i18n.dir(language)
@@ -46,13 +26,6 @@ function updateDocument() {
 }
 
 updateDocument()
-i18n.on("languageChanged", () => {
-  updateDocument()
-  try {
-    localStorage.setItem(storageKey, i18n.resolvedLanguage ?? "en")
-  } catch {
-    /* Keep in-memory preference. */
-  }
-})
+i18n.on("languageChanged", updateDocument)
 
 export default i18n

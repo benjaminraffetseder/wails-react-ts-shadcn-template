@@ -26,16 +26,15 @@ foreach ($taskRelative in @('frontend/node_modules', 'frontend/dist', 'frontend/
     }
 }
 
-$taskConfig = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/components.json') -Raw | ConvertFrom-Json -AsHashtable
+$taskConfig = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/components.json') -Raw | ConvertFrom-Json
 if (-not $taskConfig.style.StartsWith('base-')) { throw 'shadcn must use a Base UI style.' }
 
-$taskPackage = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/package.json') -Raw | ConvertFrom-Json -AsHashtable
-if (-not $taskPackage.dependencies.ContainsKey('@base-ui/react')) { throw 'Base UI dependency is missing.' }
-if ($taskPackage.dependencies['@wailsio/runtime'] -ne '3.1.0') { throw 'The Wails runtime must match the pinned Go dependency.' }
+$taskPackage = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/package.json') -Raw | ConvertFrom-Json
+if (@($taskPackage.dependencies.PSObject.Properties.Name) -notcontains '@base-ui/react') { throw 'Base UI dependency is missing.' }
+if ($taskPackage.dependencies.'@wailsio/runtime' -ne '3.1.0') { throw 'The Wails runtime must match the pinned Go dependency.' }
 
-$taskLock = Get-Content -LiteralPath (Join-Path $taskTemplate 'frontend/package-lock.json') -Raw | ConvertFrom-Json -AsHashtable
-if (@($taskLock.packages.Keys | Where-Object { $_ -match 'radix-ui' }).Count -gt 0) {
-    throw 'Radix dependencies must not be present in this Base UI template.'
+if (@($taskPackage.dependencies.PSObject.Properties.Name | Where-Object { $_ -match 'radix-ui' }).Count -gt 0) {
+    throw 'Do not add direct Radix dependencies to the Base UI template. cmdk brings its own transitive dependencies.'
 }
 
 $taskScratch = Join-Path ([System.IO.Path]::GetTempPath()) ('wails-template-verify-' + [guid]::NewGuid().ToString('N'))
@@ -46,12 +45,12 @@ New-Item -ItemType Directory -Path $taskScratch | Out-Null
 Write-Output "Generated app: $taskApp"
 Invoke-Checked 'wails3' @('init', '-n', 'template-check-app', '-d', $taskScratch, '-t', $taskTemplate, '-mod', 'example.com/template-check-app')
 
-foreach ($taskRelative in @('main.go', 'app.go', 'go.mod', 'Taskfile.yml', 'build/config.yml', '.gitignore', 'frontend/vite.config.ts', 'frontend/tsconfig.json', 'frontend/tsconfig.app.json', 'frontend/src/hooks/use-desktop.ts', 'frontend/src/pages/home-page.tsx', 'LICENSE', 'THIRD_PARTY_NOTICES.md')) {
+foreach ($taskRelative in @('main.go', 'app.go', 'settings_service.go', 'items_service.go', 'items_service_test.go', 'internal/apppaths/paths.go', 'internal/preferences/store.go', 'internal/items/migrations/001_items.sql', 'scripts/sync-version.mjs', 'internal/buildinfo/version.txt', 'go.mod', 'Taskfile.yml', 'build/config.yml', '.gitignore', 'frontend/vite.config.ts', 'frontend/vitest.config.ts', 'frontend/tsconfig.json', 'frontend/tsconfig.app.json', 'frontend/src/hooks/use-desktop.ts', 'frontend/src/pages/home-page.tsx', 'frontend/src/components/window-titlebar.tsx', 'LICENSE', 'THIRD_PARTY_NOTICES.md')) {
     if (-not (Test-Path -LiteralPath (Join-Path $taskApp $taskRelative))) {
         throw "Generated app is missing $taskRelative"
     }
 }
-foreach ($taskRelative in @('template.yaml', 'template.json', 'wails.json', 'wails.tmpl.json', 'frontend/src/lib/backend.ts', 'frontend/src/pages/home-page.tsx.tmpl', 'frontend/vite.config.ts.tmpl', 'frontend/tsconfig.json.tmpl', 'frontend/tsconfig.app.json.tmpl')) {
+foreach ($taskRelative in @('template.yaml', 'template.json', 'wails.json', 'wails.tmpl.json', 'sqlite_enabled.go', 'sqlite_disabled.go', 'frontend/src/lib/backend.ts', 'frontend/src/pages/home-page.tsx.tmpl', 'frontend/vite.config.ts.tmpl', 'frontend/tsconfig.json.tmpl', 'frontend/tsconfig.app.json.tmpl')) {
     if (Test-Path -LiteralPath (Join-Path $taskApp $taskRelative)) {
         throw "Unexpected template metadata, obsolete file, or unprocessed template: $taskRelative"
     }
@@ -61,8 +60,8 @@ if (-not $taskViteConfig.Contains('const goModule = "example.com/template-check-
     throw 'The Vite binding alias must follow the selected Go module path.'
 }
 foreach ($taskRelative in @('frontend/tsconfig.json', 'frontend/tsconfig.app.json')) {
-    $taskTsConfig = Get-Content -LiteralPath (Join-Path $taskApp $taskRelative) -Raw | ConvertFrom-Json -AsHashtable
-    if ($taskTsConfig.compilerOptions.paths['@wails/*'][0] -ne './bindings/example.com/template-check-app/*') {
+    $taskTsConfig = Get-Content -LiteralPath (Join-Path $taskApp $taskRelative) -Raw | ConvertFrom-Json
+    if ($taskTsConfig.compilerOptions.paths.'@wails/*'[0] -ne './bindings/example.com/template-check-app/*') {
         throw "The TypeScript binding alias must follow the selected Go module path: $taskRelative"
     }
 }
@@ -71,14 +70,24 @@ Push-Location $taskApp
 try {
     Invoke-Checked 'npm' @('ci', '--prefix', 'frontend')
     Invoke-Checked 'wails3' @('build')
+    Invoke-Checked 'npm' @('run', 'test:version', '--prefix', 'frontend')
+    Invoke-Checked 'npm' @('run', 'version:check', '--prefix', 'frontend')
+    Invoke-Checked 'go' @('test', './...')
     Invoke-Checked 'go' @('vet', './...')
     Invoke-Checked 'npm' @('run', 'typecheck', '--prefix', 'frontend')
     Invoke-Checked 'npm' @('run', 'lint', '--prefix', 'frontend')
     Invoke-Checked 'npm' @('run', 'format:check', '--prefix', 'frontend')
+    Invoke-Checked 'npm' @('test', '--prefix', 'frontend')
+    $taskGoFormat = & gofmt -l app.go main.go settings_service.go desktop_notifications.go items_service.go items_service_test.go internal
+    if ($LASTEXITCODE -ne 0) { throw 'Could not check Go formatting.' }
+    if ($taskGoFormat) { throw "Go files need formatting: $taskGoFormat" }
+    $taskDefaultDependencies = & go list -deps .
+    if ($LASTEXITCODE -ne 0) { throw 'Could not inspect default Go dependencies.' }
+    if ($taskDefaultDependencies -notcontains 'modernc.org/sqlite') { throw 'Default app must link the SQLite driver.' }
     $taskExecutable = Join-Path $taskApp 'bin/template-check-app.exe'
     if (-not (Test-Path -LiteralPath $taskExecutable)) { throw 'Windows executable was not generated.' }
 } finally {
     Pop-Location
 }
 
-Write-Output 'Template generation, Base UI dependencies, TypeScript, ESLint, Prettier, Go vet, and Windows build passed.'
+Write-Output 'Template generation, version fixtures, frontend tests, TypeScript, ESLint, Prettier, Go tests/vet, and the default Windows build with SQLite passed.'

@@ -34,8 +34,8 @@ const lock = read("frontend/package-lock.json")
 if (!config.style?.startsWith("base-")) throw new Error("shadcn must use a Base UI style.")
 if (!pkg.dependencies?.["@base-ui/react"]) throw new Error("Base UI dependency is missing.")
 if (pkg.dependencies?.["@wailsio/runtime"] !== "3.1.0") throw new Error("The Wails runtime must match the pinned Go dependency.")
-if (Object.keys(lock.packages).some((name) => name.includes("radix-ui"))) {
-  throw new Error("Radix dependencies must not be present in this Base UI template.")
+if (Object.keys(pkg.dependencies).some((name) => name.includes("radix-ui"))) {
+  throw new Error("Do not add direct Radix dependencies to this Base UI template. cmdk has transitive Radix dependencies.")
 }
 NODE
 
@@ -45,10 +45,8 @@ if [[ "$task_platform" == Linux ]]; then
   if [[ -z "$task_tags" ]]; then
     if pkg-config --exists gtk4 webkitgtk-6.0; then
       task_tags=''
-    elif pkg-config --exists gtk+-3.0 webkit2gtk-4.1; then
-      task_tags=gtk3
     else
-      fail 'GTK4 + WebKitGTK 6.0 (or legacy GTK3 + WebKit2GTK 4.1) development libraries are missing. Run wails3 doctor.'
+      fail 'GTK4 + WebKitGTK 6.0 development libraries are missing. Run wails3 doctor. Wails 3.1 does not support gtk3.'
     fi
   fi
 else
@@ -63,10 +61,10 @@ printf 'Generated app: %s\n' "$task_app"
 printf 'Build tags: %s\n' "${task_tags:-none}"
 wails3 init -n template-check-app -d "$task_scratch" -t "$task_template" -mod example.com/template-check-app
 
-for task_relative in main.go app.go go.mod Taskfile.yml build/config.yml .gitignore frontend/vite.config.ts frontend/tsconfig.json frontend/tsconfig.app.json frontend/src/hooks/use-desktop.ts frontend/src/pages/home-page.tsx LICENSE THIRD_PARTY_NOTICES.md; do
+for task_relative in main.go app.go settings_service.go items_service.go items_service_test.go internal/apppaths/paths.go internal/preferences/store.go internal/items/migrations/001_items.sql scripts/sync-version.mjs internal/buildinfo/version.txt go.mod Taskfile.yml build/config.yml .gitignore frontend/vite.config.ts frontend/vitest.config.ts frontend/tsconfig.json frontend/tsconfig.app.json frontend/src/hooks/use-desktop.ts frontend/src/pages/home-page.tsx frontend/src/components/window-titlebar.tsx LICENSE THIRD_PARTY_NOTICES.md; do
   [[ -f "$task_app/$task_relative" ]] || fail "Generated app is missing $task_relative"
 done
-for task_relative in template.yaml template.json wails.json wails.tmpl.json frontend/src/lib/backend.ts frontend/src/pages/home-page.tsx.tmpl frontend/vite.config.ts.tmpl frontend/tsconfig.json.tmpl frontend/tsconfig.app.json.tmpl; do
+for task_relative in template.yaml template.json wails.json wails.tmpl.json sqlite_enabled.go sqlite_disabled.go frontend/src/lib/backend.ts frontend/src/pages/home-page.tsx.tmpl frontend/vite.config.ts.tmpl frontend/tsconfig.json.tmpl frontend/tsconfig.app.json.tmpl; do
   [[ ! -e "$task_app/$task_relative" ]] || fail "Unexpected template metadata, obsolete file, or unprocessed template: $task_relative"
 done
 node - "$task_app" <<'NODE'
@@ -89,15 +87,25 @@ npm ci --prefix frontend
 if [[ -n "$task_tags" ]]; then
   wails3 build "EXTRA_TAGS=$task_tags"
   go vet -tags "$task_tags" ./...
+  go test -tags "$task_tags" ./...
 else
   wails3 build
   go vet ./...
+  go test ./...
 fi
+npm run test:version --prefix frontend
+npm run version:check --prefix frontend
 npm run typecheck --prefix frontend
 npm run lint --prefix frontend
 npm run format:check --prefix frontend
+npm test --prefix frontend
+[[ -z "$(gofmt -l app.go main.go settings_service.go desktop_notifications.go items_service.go items_service_test.go internal)" ]] || fail 'Go files need formatting.'
+task_default_dependencies="$(go list -deps .)"
+if [[ $'\n'"$task_default_dependencies"$'\n' != *$'\nmodernc.org/sqlite\n'* ]]; then
+  fail 'Default app must link the SQLite driver.'
+fi
 
 task_executable="$task_app/bin/template-check-app"
 [[ -x "$task_executable" ]] || fail "Native executable was not generated: $task_executable"
 printf 'Native executable: %s\n' "$task_executable"
-printf 'Template generation, Base UI dependencies, TypeScript, ESLint, Prettier, Go vet, and %s build passed.\n' "$task_platform"
+printf 'Template generation, version fixtures, frontend tests, TypeScript, ESLint, Prettier, Go tests/vet, and the default %s build with SQLite passed.\n' "$task_platform"

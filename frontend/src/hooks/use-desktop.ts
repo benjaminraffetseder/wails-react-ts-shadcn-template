@@ -1,9 +1,5 @@
 import { useSyncExternalStore } from "react"
-import { System } from "@wailsio/runtime"
-
-function isDesktop() {
-  return typeof window !== "undefined" && System.IsDesktop()
-}
+import { isDesktop } from "@/lib/desktop"
 
 function subscribe(onChange: () => void) {
   // Windows injects the native environment after the frontend modules have loaded.

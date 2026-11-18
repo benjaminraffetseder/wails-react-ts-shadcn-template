@@ -25,19 +25,20 @@ macOS or Linux with Bash:
 ```
 
 Each script generates an app in your temporary directory, validates the Base UI
-configuration, builds a native executable, and runs TypeScript, ESLint, Prettier,
-and Go checks.
-It prints the generated app path and preserves it so you can inspect it. Linux
-verification prefers GTK4 + WebKitGTK 6.0 and falls back to the `gtk3` build tag
-with GTK3 + WebKit2GTK 4.1. For explicit tags, use
-`WAILS_BUILD_TAGS=gtk3 ./scripts/verify-template.sh`.
+configuration, builds the native executable with SQLite enabled by default, and runs TypeScript,
+ESLint, Prettier/gofmt, frontend tests, version fixtures/drift checks, and Go tests/vet
+without SQLite-specific build tags. It also verifies that the app links the driver,
+and prints and preserves the generated app path.
+Linux needs GTK4 + WebKitGTK 6.0; Wails 3.1 no longer supports `gtk3`.
+The official Base UI Command uses cmdk, which has transitive Radix dependencies;
+do not add direct Radix dependencies or application imports.
 
 For UI changes, run `wails3 dev` in that generated app and check navigation,
-the Go greeting form, dialog keyboard controls and focus return, and theme
-persistence. If verification used build tags, pass the same tags to `wails3 dev`.
+the desktop and SQLite examples, command palette keyboard controls and focus return,
+and theme persistence. If verification used build tags, pass the same tags to `wails3 dev`.
 For localized UI changes, check both English and German, language persistence after
-reload, dialog close labels, and the translated Go greeting. Update both locale
-JSON files when adding a translation key.
+reload, dialog close labels, and the translated desktop and SQLite controls.
+Update both locale JSON files when adding a translation key.
 Validation is manual, with no CI/CD workflows. Report which platform and tags you
 verified when submitting a change; a successful build does not replace UI checks.
 
@@ -49,3 +50,11 @@ In a generated app's `frontend` folder, use `npm run lint` and
 `npm run format:check` to check your edits. Apply fixes with `npm run lint:fix`
 and `npm run format`. Keep generated Wails bindings out of linting and formatting;
 the supplied ignore patterns already exclude them.
+
+Run `npm test` and `npm run test:version` from the generated frontend. The version
+fixtures use actual generated packaging files there, and synthetic files when run
+directly from template source (`node --test scripts/sync-version.test.mjs`). Bump
+versions through the frontend npm `version` lifecycle and run `npm run version:check`.
+See [the feature guide](docs/features.md) for extension/removal boundaries. Check
+native cancellation, permissions, restart persistence, and multi-window delivery on
+each target OS; mocked APIs and builds cannot establish those OS-specific behaviors.

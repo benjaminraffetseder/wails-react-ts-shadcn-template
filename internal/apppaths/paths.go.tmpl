@@ -1,0 +1,47 @@
+// Package apppaths owns fixed, per-user native paths. Never accept these from JS.
+package apppaths
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+)
+
+const AppID = "{{.BinaryName}}"
+
+func appDirectory(base string) (string, error) {
+	if !filepath.IsAbs(base) || AppID == "." || AppID == ".." || strings.ContainsAny(AppID, `/\`) {
+		return "", fmt.Errorf("invalid application storage path")
+	}
+	return filepath.Join(base, AppID), nil
+}
+
+func ConfigDir() (string, error) {
+	base, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return appDirectory(base)
+}
+
+func DataDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		if base := os.Getenv("LOCALAPPDATA"); base != "" {
+			return appDirectory(base)
+		}
+		return ConfigDir()
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	if runtime.GOOS == "darwin" {
+		return appDirectory(filepath.Join(home, "Library", "Application Support"))
+	}
+	if base := os.Getenv("XDG_DATA_HOME"); filepath.IsAbs(base) {
+		return appDirectory(base)
+	}
+	return appDirectory(filepath.Join(home, ".local", "share"))
+}

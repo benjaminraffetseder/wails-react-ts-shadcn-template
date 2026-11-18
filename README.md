@@ -2,7 +2,10 @@
 
 A reusable **Wails v3 custom template** for desktop apps. It includes React 19, TypeScript 6, Vite 8, React Router 8, Tailwind CSS 4, and shadcn/ui with Base UI primitives. The Go dependency and `@wailsio/runtime` are pinned to **3.1.0**.
 
-![Generated template app in light mode with sidebar navigation and a Go greeting form.](docs/images/template-app-overview.png)
+Go-backed settings, desktop hooks, an extensible command palette, synchronized
+application versions, and a removable SQLite example are included. See the
+[feature guide](docs/features.md) for usage, storage paths, preview limitations,
+and how to adapt or remove the SQLite example.
 
 ## Create a new desktop app
 
@@ -50,7 +53,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
 
 Add Go's binary directory to your `PATH` if it is not already there. This is `GOBIN` when configured, otherwise the `bin` directory under `go env GOPATH` (normally `%USERPROFILE%\go\bin` on Windows or `~/go/bin` on macOS/Linux). Reopen your terminal after changing its persistent PATH, then run `wails3 doctor`.
 
-Windows needs WebView2; macOS needs Xcode command-line tools; Linux needs a C compiler, `pkg-config`, GTK4, and WebKitGTK 6.0 development libraries. Follow the [Wails v3 installation guide](https://v3.wails.io/quick-start/installation/). Wails 3.0.x also supports legacy GTK3 + WebKit2GTK 4.1 with the `gtk3` build tag; see the commands below.
+Windows needs WebView2; macOS needs Xcode command-line tools; Linux needs a C compiler, `pkg-config`, GTK4, and WebKitGTK 6.0 development libraries. Follow the [Wails v3 installation guide](https://v3.wails.io/quick-start/installation/). This template targets Wails 3.1; the legacy `gtk3` build tag is not supported.
 
 The template also requires a webview compatible with [Tailwind CSS 4's browser baseline](https://tailwindcss.com/docs/compatibility#browser-support): Chrome 111+, Safari 16.4+, or Firefox 128+ for browser previews. Use a current WebView2 runtime on Windows and a recent WebKit engine on macOS/Linux; Wails' minimum OS versions alone do not guarantee this CSS support.
 
@@ -60,13 +63,19 @@ The template also requires a webview compatible with [Tailwind CSS 4's browser b
 - Overview, settings, and a catch-all 404 screen.
 - React Router `HashRouter`, which works with Wails asset serving.
 - Official shadcn Button, Card, Input, Label, Badge, Dialog, and Separator source components using Base UI.
-- Neutral design tokens with light, dark, and system themes. The theme persists in localStorage and follows system changes when selected.
+- Neutral design tokens with light, dark, and system themes. Native preferences persist through Go; system mode follows system changes.
 - react-i18next localization with bundled English and German translations and a saved language selector.
-- A Go `App.Greet` method and a typed React form with loading and error states.
-- Browser preview that identifies itself and disables the native example when Go is unavailable.
+- Browser preview with local preferences and clear limitations for native actions and SQLite.
 - TypeScript and Vite aliases: `@/` for app source and `@wails/` for generated bindings in your Go module (for example, `@wails/app`).
 - A committed npm lockfile for repeatable frontend installs.
 - ESLint with TypeScript and React Hooks rules, plus Prettier formatting.
+- Versioned native settings with persisted first-launch defaults and shared React state with loading/save/error/recovery states.
+- Typed hooks for file dialogs, clipboard, window controls, notifications, and events, with safe browser-preview behavior.
+- Accessible Base UI command dialog with ⌘K / Ctrl+K, navigation, theme/language commands, and feature registration/cleanup.
+- SQLite items CRUD works out of the box with embedded migrations and a pure-Go driver. Native startup opens an app-specific database automatically; the example is removable.
+- One package version synchronized to native packaging and embedded in Settings/About, with a no-write drift check.
+- An optional draggable React title bar using the existing native window hooks; the OS title bar remains the default.
+- Vitest tests for settings, mocked desktop hooks, command keyboard/focus behavior, and Node/Go persistence/migration tests.
 
 ## Develop and build a generated app
 
@@ -84,13 +93,9 @@ wails3 build
 
 `wails3 build` builds the frontend and embeds it in a Go executable under `bin/` (`.exe` on Windows). Run `wails3 package` to create platform packages, including a macOS `.app` bundle. The root `Taskfile.yml` uses the platform build tasks Wails generates under `build/`; no separate Task installation is required.
 
-On Linux with legacy GTK3 + WebKit2GTK 4.1, use these commands, stopping development before building:
-
-```bash
-EXTRA_TAGS=gtk3 wails3 dev
-# Stop with Ctrl+C, then:
-wails3 build -tags gtk3
-```
+SQLite is included in ordinary `wails3 dev`, `wails3 build`, and `wails3 package`
+commands. See the [feature guide](docs/features.md#sqlite-support) to adapt or remove
+the example. Browser preview displays an explanation; native mode runs the database.
 
 After running `wails3 dev` or `wails3 build` at least once to generate bindings, stop any running Wails dev session before starting a separate Vite preview. Run frontend commands from the generated app:
 
@@ -104,9 +109,9 @@ npm run build
 npm run dev
 ```
 
-The last command previews the frontend in a browser. The greeting example requires `wails3 dev` or the packaged desktop app; plain Vite does not provide native methods. The `useDesktop` hook follows Wails' runtime initialization event, enabling the native form once the environment is ready. Checking for `window._wails` alone would also match browser previews.
+The last command previews the frontend in a browser. Desktop integration actions and SQLite require `wails3 dev` or the packaged desktop app; plain Vite does not provide native methods. The `useDesktop` hook follows Wails' runtime initialization event, enabling native actions once the environment is ready. Checking for `window._wails` alone would also match browser previews.
 
-Wails 3.1.0 selects JavaScript bindings for community template paths without a `-ts` suffix. Those bindings carry JSDoc types; `allowJs` lets TypeScript infer the greeting model and method signatures. You can also generate `.ts` bindings explicitly with `wails3 generate bindings -ts`. The frontend imports work with either format. The Vite plugin from `@wailsio/runtime/plugins/vite` loads generated event bindings.
+Wails 3.1.0 selects JavaScript bindings for community template paths without a `-ts` suffix. Those bindings carry JSDoc types; `allowJs` lets TypeScript infer generated model and method signatures. You can also generate `.ts` bindings explicitly with `wails3 generate bindings -ts`. The frontend imports work with either format. The Vite plugin from `@wailsio/runtime/plugins/vite` loads generated event bindings.
 
 Run `npm run lint:fix` to apply ESLint fixes and `npm run format` to format frontend source, configs, styles, and locale JSON. ESLint uses `eslint.config.js`; Prettier uses `.prettierrc.json` and `.prettierignore`. Generated Wails bindings, build output, and dependencies are excluded from both tools, and Prettier also skips the generated npm lockfile. ESLint reports code issues while Prettier owns formatting; `eslint-config-prettier` disables conflicting style rules. Lint warnings fail the check.
 
@@ -153,17 +158,17 @@ frontend/
       use-desktop.ts            # Native runtime readiness and browser preview
     lib/
       utils.ts                  # Shared class-name helper
-    pages/                      # Overview (calls generated Greet directly), settings, 404
+    pages/                      # Overview (desktop and SQLite examples), settings, 404
   bindings/                     # Generated by Wails; do not edit
 ```
 
-Add a screen under `src/pages`, register it in `src/app.tsx`, and add a navigation item in `src/components/app-layout.tsx`. Add exported methods to Go's `App` service, or register another service with `application.NewService` in `main.go`; Wails regenerates bindings during development/build. Replace the greeting example once you add your app's features.
+Add a screen under `src/pages`, register it in `src/app.tsx`, and add an entry in `src/lib/routes.ts`. Navigation and command-palette routes share those definitions. Add exported methods to Go's `App` service, or register another service with `application.NewService` in `main.go`; Wails regenerates bindings during development/build. Adapt or remove the desktop and SQLite examples when adding your app's features.
 
-Customize `build/config.yml`, the native window title in `main.go`, and the icons under `build/` for each app. After changing product metadata, run `wails3 task common:update:build-assets`. Set `app.title` in both `frontend/src/i18n/locales/en.json` and `de.json` to change the sidebar and browser title, and update the fallback `<title>` in `frontend/index.html`. The native window uses the standard system title bar and controls; its title is independent of the frontend language selector.
+Customize `build/config.yml`, the native window title in `main.go`, and the icons under `build/` for each app. After changing product metadata, run `wails3 task common:update:build-assets`, then `node scripts/sync-version.mjs`. Bump versions from `frontend/` with `npm version patch --no-git-tag-version` and verify with `npm run version:check`. Set `app.title` in both `frontend/src/i18n/locales/en.json` and `de.json` to change the sidebar and browser title, and update the fallback `<title>` in `frontend/index.html`. The native window uses the standard system title bar and controls; its title is independent of the frontend language selector. The [optional custom title bar](docs/features.md#optional-custom-title-bar) uses the translated title and can be enabled with two source edits.
 
 ## Localization
 
-Select **English** or **Deutsch** in Settings. The app uses the saved `desktop-language` preference first, then the first supported language in the webview's language list, with English as the fallback. Regional variants such as `de-AT` use German. The selection persists when localStorage is available; switching still works in memory when storage is blocked.
+Select **English** or **Deutsch** in Settings or the command palette. Native settings are authoritative; the first launch persists English and system theme as defaults. Browser preview stores its own preferences in localStorage and chooses the first supported browser language when no saved preference exists; regional variants such as `de-AT` use German. Storage failures are visible and failed changes are not presented as saved. Use `useAppSettings().updateSettings({ language: "de" })` for persistent changes.
 
 Translations are bundled under `frontend/src/i18n/locales/` and work offline. `src/i18n/index.ts` initializes i18next before React renders and updates the HTML language, text direction, and document title. Translation keys are typed from the English resource in `src/i18n/i18next.d.ts`.
 
@@ -178,13 +183,15 @@ export function OverviewHeading() {
 }
 ```
 
-Add a locale JSON file with the same keys, import it into `src/i18n/index.ts`, register it in `resources`, and add its code and native display name to `languages`. Missing translations fall back to English. Keep messages in the frontend: Go's `App.Greet` returns a typed `Greeting` object with a trimmed `name`, and React interpolates it into the localized greeting.
+Add a locale JSON file with the same keys, import it into `src/i18n/index.ts`, register it in `resources`, and add its code and native display name to `languages`. Missing translations fall back to English. Go services return typed application data; React owns the localized user-facing messages.
 
 ## Maintain the template
 
 Files with `.tmpl` in their names are processed by `wails3 init`, which removes `.tmpl` from the generated filenames; ordinary frontend files are copied. The Vite and TypeScript config templates interpolate the Go module path into the `@wails/` alias, so pages remain ordinary `.tsx` files with direct imports such as `@wails/app`. `gitignore.tmpl` supplies the generated app's `.gitignore`. Wails generates the platform build assets automatically during initialization.
 
 Keep `frontend/package-lock.json` synchronized whenever dependencies change. Make dependency changes in a generated app, then copy its updated `package.json` and `package-lock.json` back to the template. Keep the Go Wails dependency, CLI, and npm runtime on the same version. TypeScript 6.0.3 is used because [typescript-eslint currently supports versions below 6.1](https://typescript-eslint.io/users/dependency-versions/#typescript); TypeScript 7 requires a compatible parser release first. Keep `node_modules`, `dist`, generated bindings, and built binaries out of the template source, since local template generation copies files even if Git ignores them.
+
+The frontend has a scoped npm override for minimatch 10.x in the lint dependency chain, using patched 11.0.8 or newer within major 11. Remove it once ESLint and TypeScript-ESLint adopt the patched major themselves. Recheck lint discovery and rule execution before changing this override.
 
 This repository has no CI/CD pipelines or GitHub Actions workflows. Builds, linting, formatting checks, and template verification run manually on your machine. From a clean checkout, run the script for your platform after installing the prerequisites:
 
@@ -200,15 +207,9 @@ macOS or Linux (Bash, including the Bash shipped with macOS):
 ./scripts/verify-template.sh
 ```
 
-The scripts validate Base UI and Wails runtime dependencies, generate an app with a custom Go module path, install the locked frontend dependencies, build it for the current platform, run Go vet, TypeScript, ESLint, and Prettier checks, and verify the native executable. They print the generated app's temporary path and preserve it for inspection. Exercise navigation, the greeting, dialog keyboard controls, theme persistence, and English/German language switching and persistence with `wails3 dev` in that app.
+The scripts validate Base UI and Wails runtime dependencies, generate an app with a custom name and Go module path, install locked dependencies, and build the SQLite-enabled app using the standard command. They run frontend tests, version fixtures/drift checks, Go settings/SQLite tests and vet, TypeScript, ESLint, and formatting checks, and verify that the default app links SQLite. They preserve the generated app at its printed temporary path. Exercise native dialogs, clipboard/notification permissions, command focus/keyboard behavior, restart persistence, and multi-window settings with `wails3 dev` on each target OS; builds and mocks do not replace those checks.
 
-On Linux, the Bash script uses `pkg-config` to prefer GTK4 + WebKitGTK 6.0, falling back to GTK3 + WebKit2GTK 4.1 with the `gtk3` tag for both Wails and Go vet. Install native dependencies as described in the [Wails v3 installation guide](https://v3.wails.io/quick-start/installation/). To supply build tags explicitly:
-
-```bash
-WAILS_BUILD_TAGS=gtk3 ./scripts/verify-template.sh
-```
-
-Use the same tags for development in the generated app, for example `EXTRA_TAGS=gtk3 wails3 dev` in Bash. On macOS, install Xcode command-line tools with `xcode-select --install`.
+On Linux, the Bash script checks GTK4 + WebKitGTK 6.0 with `pkg-config`. Install native dependencies as described in the [Wails v3 installation guide](https://v3.wails.io/quick-start/installation/). Optional extra build tags can be supplied with `WAILS_BUILD_TAGS`; `gtk3` is not supported by Wails 3.1. On macOS, install Xcode command-line tools with `xcode-select --install`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and verification steps.
 

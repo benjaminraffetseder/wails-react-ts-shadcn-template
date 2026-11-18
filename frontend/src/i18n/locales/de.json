@@ -1,27 +1,97 @@
 {
-  "app": { "title": "Desktop-Vorlage", "browserPreview": "Browser-Vorschau" },
-  "common": { "close": "Schließen" },
+  "app": {
+    "title": "Desktop-Vorlage",
+    "browserPreview": "Browser-Vorschau"
+  },
+  "common": {
+    "close": "Schließen",
+    "loading": "Wird geladen…",
+    "error": "Ein Fehler ist aufgetreten",
+    "details": "Details",
+    "retry": "Erneut versuchen",
+    "unavailable": "Nicht verfügbar"
+  },
   "nav": {
     "label": "Hauptnavigation",
     "overview": "Übersicht",
     "settings": "Einstellungen"
   },
-  "greeting": {
-    "title": "Go-Verbindung",
-    "name": "Name",
-    "submit": "Begrüßen",
-    "pending": "Senden…",
-    "result": "Hallo, {{name}}!",
-    "emptyResult": "Hallo!",
-    "error": "Die Anfrage an Go ist fehlgeschlagen.",
-    "previewHint": "Starte <command>wails3 dev</command>, um Go zu verbinden."
-  },
-  "dialog": { "open": "Dialog öffnen", "title": "Dialog" },
   "settings": {
     "appearance": "Darstellung",
     "themeLabel": "Farbschema",
-    "themes": { "light": "Hell", "dark": "Dunkel", "system": "System" },
-    "language": "Sprache"
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "language": "Sprache",
+    "saving": "Einstellungen werden gespeichert…",
+    "native": "Go speichert die Einstellungen auf diesem Gerät.",
+    "preview": "Browservorschau: Einstellungen werden nur in diesem Browser gespeichert.",
+    "storage": "Einstellungen speichern",
+    "storageHint": "Zurücksetzen stellt das Standarddesign und die Standardsprache wieder her. Ungültige native Dateien werden vor der Wiederherstellung gesichert. Keine Geheimnisse in Einstellungen speichern.",
+    "reset": "Auf Standard zurücksetzen",
+    "about": "Über die App",
+    "version": "Version {{version}}",
+    "embeddedVersion": "In diesen nativen Build eingebettete Version.",
+    "packageVersion": "Version aus dem Frontend-Paket."
   },
-  "notFound": { "title": "Seite nicht gefunden", "back": "Zur Übersicht" }
+  "window": {
+    "titlebar": "Fenstersteuerung"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "back": "Zur Übersicht"
+  },
+  "errors": {
+    "unavailable": "Diese Aktion benötigt die Wails-Desktop-App.",
+    "unsupported": "Diese Funktion ist auf dieser Plattform oder in diesem Build nicht verfügbar.",
+    "permission": "Die Berechtigung wurde verweigert. Prüfe die App-Berechtigungen in den Systemeinstellungen.",
+    "busy": "Warte, bis die aktuelle Aktion abgeschlossen ist.",
+    "operation": "Die Aktion ist fehlgeschlagen. Die zuletzt gespeicherten Werte bleiben erhalten. Prüfe die Details und versuche es erneut."
+  },
+  "commands": {
+    "title": "Befehlspalette",
+    "description": "Befehle suchen. Mit den Pfeiltasten auswählen und mit Enter ausführen.",
+    "search": "Befehle suchen…",
+    "empty": "Keine Befehle gefunden.",
+    "navigation": "Navigation",
+    "launcher": "Befehle",
+    "running": "Befehl wird ausgeführt…"
+  },
+  "desktop": {
+    "title": "Desktop-Integration",
+    "description": "Native Dialoge, Zwischenablage, Fenstersteuerung und Benachrichtigungen ausprobieren.",
+    "preview": "Native Aktionen sind in der Browservorschau nicht verfügbar. Starte wails3 dev, um sie auszuprobieren.",
+    "openFile": "Datei öffnen",
+    "openFiles": "Dateien öffnen",
+    "selectDirectory": "Ordner wählen",
+    "saveFile": "Speicherort wählen",
+    "clipboardText": "Ausgewählter Pfad oder Text der Zwischenablage",
+    "cancelled": "Auswahl abgebrochen. Keine Datei ausgewählt.",
+    "selected": "Auswahl bereit. Den Pfad unten kopieren.",
+    "copy": "Text kopieren",
+    "copied": "Text kopiert.",
+    "readClipboard": "Zwischenablage lesen",
+    "read": "Zwischenablage gelesen.",
+    "minimize": "Minimieren",
+    "maximize": "Maximieren / wiederherstellen",
+    "notify": "Benachrichtigung senden",
+    "notificationTitle": "Desktop-Starter",
+    "notificationBody": "Deine native Benachrichtigung funktioniert.",
+    "notified": "Benachrichtigung an das Betriebssystem übergeben."
+  },
+  "items": {
+    "title": "SQLite-Beispiel",
+    "description": "Lokale Datensätze unter Kontrolle von Go. Änderungen bleiben nach einem Neustart erhalten.",
+    "preview": "SQLite läuft in der nativen Desktop-App. Starte wails3 dev, um dieses Beispiel auszuprobieren.",
+    "newTitle": "Titel für neuen Eintrag",
+    "add": "Hinzufügen",
+    "empty": "Noch keine Einträge.",
+    "itemTitle": "Titel für Eintrag {{id}}",
+    "save": "Titel speichern",
+    "complete": "Als erledigt markieren",
+    "completed": "Erledigt",
+    "delete": "Löschen"
+  }
 }

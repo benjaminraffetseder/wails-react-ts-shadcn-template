@@ -1,20 +1,18 @@
 package main
 
-import "strings"
+import "{{.ModulePath}}/internal/buildinfo"
 
 // App is a Wails service exposed to the frontend through generated bindings.
 type App struct{}
 
+type AppInfo struct {
+	Version string `json:"version"`
+}
+
+func (a *App) GetInfo() AppInfo {
+	return AppInfo{Version: buildinfo.Version()}
+}
+
 func NewApp() *App {
 	return &App{}
-}
-
-// Greeting carries data; the frontend owns localized messages.
-type Greeting struct {
-	Name string `json:"name"`
-}
-
-// Greet demonstrates a typed frontend-to-Go call. Replace it with your app's API.
-func (a *App) Greet(name string) Greeting {
-	return Greeting{Name: strings.TrimSpace(name)}
 }
