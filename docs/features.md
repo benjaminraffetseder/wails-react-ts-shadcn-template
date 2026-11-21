@@ -217,6 +217,72 @@ Tray icons, global shortcuts, shortcut recording, and secondary picker windows
 are application-specific opt-in extensions. Add their Wails lifecycle handling
 when an app needs them; keep prompt data and picker workflows in that app.
 
+## Queries and mutations
+
+`App` creates one stable TanStack Query client for its lifetime and provides it to
+all routes. `src/lib/query-client.ts` exports `createQueryClient()` for isolated
+tests and `localQueryOptions` for native operations. Data is fresh for 30 seconds
+(`staleTime`); this does not schedule polling. Stale queries can refetch on mount,
+window focus, or network reconnect. Inactive queries use TanStack's default
+five-minute garbage collection. The cache lives in memory per window; SQLite is
+the durable data store. Separate windows do not synchronize caches automatically.
+For changes originating outside a mounted example, invalidate its query key from
+an appropriate Wails event or explicitly refetch.
+
+The SQLite example uses `src/hooks/use-items.ts`:
+
+```tsx
+import { useItems } from "@/hooks/use-items"
+
+const { available, query, change } = useItems()
+const items = query.data ?? []
+
+// Use these in separate event handlers when available and no write is pending.
+const add = () => change.mutate({ kind: "add", title: "First item" })
+const update = () =>
+  change.mutate({ kind: "update", id: 1, title: "Edited item", done: true })
+const remove = () => change.mutate({ kind: "delete", id: 1 })
+```
+
+The query key is `itemsQueryKey` (`["items"]`). Successful writes invalidate that
+key and await the list refresh before clearing the pending mutation state. A
+failed refresh appears as a query error; **Retry** reads again without repeating
+the write. Failed writes retain the draft and expose the mutation error. The UI
+guards overlapping writes, including repeated submissions before React renders.
+Preview disables the query and the hook rejects mutation attempts without calling
+native CRUD bindings.
+
+For other local Go services, use unique query keys and spread `localQueryOptions`
+into both `useQuery` and `useMutation` options. It sets `networkMode: "always"`
+and `retry: false`: local data remains available without internet and errors
+surface immediately. Gate native queries with `enabled: useDesktop()` and check
+runtime availability before writes. Use callbacks such as `queryFn: () => GetItems()`
+so Query's context is not passed as a Go method argument. HTTP calls should omit
+`localQueryOptions`; they keep TanStack's network-aware behavior and standard
+retry policy. Each feature owns the invalidations needed after its writes.
+
+`@tanstack/react-query` is an application dependency;
+`@tanstack/react-query-devtools` is a development dependency. `App` renders
+`ReactQueryDevtools` only when `import.meta.env.DEV`, initially closed. Use the
+floating toggle to inspect query keys, cached values, errors, and mutations.
+`npm run dev` and `wails3 dev` include it; production `npm run build` and
+`wails3 build` exclude it.
+
+Keep the settings store for versioned preferences, boot-time theme/language, and
+revision-aware synchronization. File dialogs, clipboard, notifications, and window
+actions continue to use the existing native hooks.
+
+Removing the SQLite example can leave Query available for your own features. To
+remove Query as well, replace any query-backed features, remove
+`QueryClientProvider`, its `useState` client, and Devtools from `app.tsx`, delete
+`src/lib/query-client.ts`, and run
+`npm uninstall @tanstack/react-query @tanstack/react-query-devtools` in the
+generated frontend. Remove or adapt tests that import the client.
+
+References: [TanStack Query defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults),
+[network modes](https://tanstack.com/query/latest/docs/framework/react/guides/network-mode),
+and [Devtools](https://tanstack.com/query/latest/docs/framework/react/devtools).
+
 ## SQLite support
 
 SQLite is enabled out of the box. Native startup opens the app-specific database
@@ -269,7 +335,8 @@ development/build. Keep database access in Go.
 
 To remove SQLite completely:
 
-1. Remove the `ItemsDemo` import/render in `home-page.tsx`, its component, and its test.
+1. Remove the `ItemsDemo` import/render in `home-page.tsx`, its component, its test,
+   and `src/hooks/use-items.ts`. Query can remain for other application data.
 2. Remove the `NewItemsService()` registration from `main.go`.
 3. Remove `items_service.go`, `items_service_test.go`, and `internal/items/`.
 4. Run `go mod tidy` and `wails3 build` to refresh dependencies and generated
@@ -326,7 +393,8 @@ actual platform files when executed in a freshly generated app.
 From template source, run the platform script in `scripts/verify-template.*`.
 It generates a custom-name/custom-module app, builds with SQLite using ordinary commands,
 checks version fixtures and drift, tests Go persistence/migrations and mocked
-frontend hooks/palette/settings, and runs TypeScript, lint, formatting, and Go vet.
+frontend hooks/palette/settings, query-backed CRUD/offline/error recovery, and
+runs TypeScript, lint, formatting, and Go vet.
 The generated app stays in its printed temporary directory for inspection.
 
 From a generated app, run `npm test --prefix frontend`,

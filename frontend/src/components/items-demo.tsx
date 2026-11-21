@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import { useTranslation } from "react-i18next"
-import { GetItems, AddItem, UpdateItem, DeleteItem } from "@wails/itemsservice"
-import { useDesktop } from "@/hooks/use-desktop"
+import { useItems, type Item, type ItemChange } from "@/hooks/use-items"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldLabel, FieldGroup } from "@/components/ui/field"
@@ -14,8 +13,6 @@ import {
 } from "@/components/ui/card"
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { ErrorNotice } from "@/components/error-notice"
-
-type Item = Awaited<ReturnType<typeof GetItems>>[number]
 
 function ItemRow({
   item,
@@ -82,63 +79,28 @@ function ItemRow({
 
 export function ItemsDemo() {
   const { t } = useTranslation()
-  const enabled = useDesktop()
-  const [items, setItems] = useState<Item[]>([])
+  const { available: enabled, query, change: mutation } = useItems()
+  const items = query.data ?? []
   const [title, setTitle] = useState("")
-  const [busy, setBusy] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const mounted = useRef(false)
+  const busy = mutation.isPending || query.isFetching
+  const loading = query.isPending
+  const error = mutation.error ?? query.error
   const working = useRef(false)
-  useEffect(() => {
-    mounted.current = true
-    if (!enabled)
-      return () => {
-        mounted.current = false
-      }
-    let cancelled = false
-    void GetItems()
-      .then((result) => {
-        if (!cancelled) setItems(result)
-      })
-      .catch((cause: unknown) => {
-        if (!cancelled)
-          setError(cause instanceof Error ? cause : new Error(String(cause)))
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-      mounted.current = false
-    }
-  }, [enabled])
-  async function change(action: () => Promise<unknown>) {
-    if (!enabled || working.current) return
+  function change(action: ItemChange) {
+    if (!enabled || working.current || busy) return
     working.current = true
-    setBusy(true)
-    setError(null)
-    try {
-      await action()
-      const result = await GetItems()
-      if (mounted.current) setItems(result)
-    } catch (cause) {
-      if (mounted.current)
-        setError(cause instanceof Error ? cause : new Error(String(cause)))
-    } finally {
-      working.current = false
-      if (mounted.current) {
-        setBusy(false)
-        setLoading(false)
-      }
-    }
+    mutation.mutate(action, {
+      onSuccess: () => {
+        if (action.kind === "add") setTitle("")
+      },
+      onSettled: () => {
+        working.current = false
+      },
+    })
   }
   function add(event: FormEvent) {
     event.preventDefault()
-    void change(async () => {
-      await AddItem(title)
-      if (mounted.current) setTitle("")
-    })
+    change({ kind: "add", title })
   }
   return (
     <Card className="shadow-none">
@@ -180,10 +142,10 @@ export function ItemsDemo() {
                     item={item}
                     busy={busy}
                     update={(id, value, done) => {
-                      void change(() => UpdateItem(id, value, done))
+                      change({ kind: "update", id, title: value, done })
                     }}
                     remove={(id) => {
-                      void change(() => DeleteItem(id))
+                      change({ kind: "delete", id })
                     }}
                   />
                 ))}
@@ -201,7 +163,8 @@ export function ItemsDemo() {
                 variant="outline"
                 disabled={busy}
                 onClick={() => {
-                  void change(async () => undefined)
+                  mutation.reset()
+                  void query.refetch()
                 }}
               >
                 {t("common.retry")}
