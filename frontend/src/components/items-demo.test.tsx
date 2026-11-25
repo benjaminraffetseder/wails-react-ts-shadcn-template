@@ -15,7 +15,7 @@ const mock = vi.hoisted(() => ({
   remove: vi.fn(),
 }))
 vi.mock("@/hooks/use-desktop", () => ({ useDesktop: () => mock.desktop }))
-vi.mock("@wails/itemsservice", () => ({
+vi.mock("@wails/internal/items/itemsservice", () => ({
   GetItems: mock.load,
   AddItem: mock.add,
   UpdateItem: mock.update,

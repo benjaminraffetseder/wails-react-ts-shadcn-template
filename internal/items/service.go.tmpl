@@ -1,4 +1,4 @@
-package main
+package items
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"{{.ModulePath}}/internal/apppaths"
-	"{{.ModulePath}}/internal/items"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -15,7 +14,7 @@ import (
 // ItemsService opens its database and runs migrations on every native startup.
 // React uses typed domain methods; SQL and paths stay in Go.
 type ItemsService struct {
-	store   items.Repository
+	store   Repository
 	initErr error
 	path    func() (string, error)
 }
@@ -32,7 +31,7 @@ func (s *ItemsService) ServiceStartup(_ context.Context, _ application.ServiceOp
 	if err != nil {
 		s.initErr = fmt.Errorf("items:initialization: %w", err)
 	} else {
-		store, err := items.Open(file)
+		store, err := Open(file)
 		s.initErr = err
 		if err == nil {
 			s.store = store
@@ -61,21 +60,21 @@ func (s *ItemsService) ready() error {
 	return nil
 }
 
-func (s *ItemsService) GetItems() ([]items.Item, error) {
+func (s *ItemsService) GetItems() ([]Item, error) {
 	if err := s.ready(); err != nil {
 		return nil, err
 	}
 	return s.store.List()
 }
-func (s *ItemsService) AddItem(title string) (items.Item, error) {
+func (s *ItemsService) AddItem(title string) (Item, error) {
 	if err := s.ready(); err != nil {
-		return items.Item{}, err
+		return Item{}, err
 	}
 	return s.store.Add(title)
 }
-func (s *ItemsService) UpdateItem(id int64, title string, done bool) (items.Item, error) {
+func (s *ItemsService) UpdateItem(id int64, title string, done bool) (Item, error) {
 	if err := s.ready(); err != nil {
-		return items.Item{}, err
+		return Item{}, err
 	}
 	return s.store.Update(id, title, done)
 }

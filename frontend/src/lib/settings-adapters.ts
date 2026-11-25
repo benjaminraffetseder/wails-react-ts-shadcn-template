@@ -67,7 +67,7 @@ export function createPreviewAdapter(
 
 export async function createNativeAdapter(): Promise<SettingsAdapter> {
   requireDesktop()
-  const native = await import("@wails/settingsservice")
+  const native = await import("@wails/internal/preferences/settingsservice")
   const { Patch } = await import("@wails/internal/preferences/models")
   return {
     source: "native",

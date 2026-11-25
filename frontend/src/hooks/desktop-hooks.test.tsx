@@ -48,7 +48,9 @@ vi.mock("@wailsio/runtime", () => ({
     },
   },
 }))
-vi.mock("@wails/desktopnotifications", () => ({ Notify: mock.notify }))
+vi.mock("@wails/internal/desktop/desktopnotifications", () => ({
+  Notify: mock.notify,
+}))
 
 beforeEach(() => {
   mock.native = true

@@ -14,7 +14,8 @@ export function useNotification() {
   const notify = useCallback(
     (options: NotificationOptions) =>
       run(async () => {
-        const { Notify } = await import("@wails/desktopnotifications")
+        const { Notify } =
+          await import("@wails/internal/desktop/desktopnotifications")
         await Notify({
           id: options.id ?? crypto.randomUUID(),
           title: options.title,

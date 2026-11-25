@@ -1,0 +1,49 @@
+package app
+
+import (
+	"io/fs"
+
+	"{{.ModulePath}}/internal/desktop"
+	"{{.ModulePath}}/internal/items"
+	"{{.ModulePath}}/internal/preferences"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// Run wires the native services, assets, events, and main window.
+func Run(assets fs.FS) error {
+	application.RegisterEvent[preferences.Settings]("settings:changed")
+	var app *application.App
+	settings := preferences.NewSettingsService(func(value preferences.Settings) {
+		app.Event.Emit("settings:changed", value)
+	})
+	app = application.New(application.Options{
+		Name: "{{.ProjectName}}",
+		Services: []application.Service{
+			application.NewService(NewApp()),
+			application.NewService(settings),
+			application.NewService(desktop.NewDesktopNotifications()),
+			application.NewService(items.NewItemsService()),
+		},
+		Assets: application.AssetOptions{
+			Handler: application.AssetFileServerFS(assets),
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
+
+	// For the optional React title bar, set Frameless: true here and render
+	// <AppLayout customTitlebar /> in the frontend. See docs/features.md.
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:            "{{.ProjectName}}",
+		Width:            1100,
+		Height:           760,
+		MinWidth:         760,
+		MinHeight:        560,
+		BackgroundColour: application.NewRGB(250, 250, 250),
+		URL:              "/",
+	})
+
+	return app.Run()
+}

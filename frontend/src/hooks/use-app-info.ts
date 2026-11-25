@@ -11,7 +11,7 @@ export function useAppInfo() {
   useEffect(() => {
     if (!desktop) return
     let cancelled = false
-    void import("@wails/app")
+    void import("@wails/internal/app/app")
       .then(async ({ GetInfo }) => {
         if (cancelled) return
         const result = await GetInfo()
