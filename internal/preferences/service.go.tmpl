@@ -1,0 +1,38 @@
+package preferences
+
+import (
+	"path/filepath"
+
+	"{{.ModulePath}}/internal/apppaths"
+)
+
+type SettingsService struct {
+	store   *Store
+	publish func(Settings)
+}
+
+// NewSettingsService publishes successful updates and resets; publish may be nil.
+func NewSettingsService(publish func(Settings)) *SettingsService {
+	return &SettingsService{store: New(func() (string, error) {
+		dir, err := apppaths.ConfigDir()
+		return filepath.Join(dir, "settings.json"), err
+	}), publish: publish}
+}
+
+// GetSettings loads preferences, creating persisted defaults on first launch.
+func (s *SettingsService) GetSettings() (Settings, error) { return s.store.Get() }
+
+func (s *SettingsService) UpdateSettings(patch Patch) (Settings, error) {
+	return s.changed(s.store.Update(patch))
+}
+
+func (s *SettingsService) ResetSettings() (Settings, error) {
+	return s.changed(s.store.Reset())
+}
+
+func (s *SettingsService) changed(settings Settings, err error) (Settings, error) {
+	if err == nil && s.publish != nil {
+		s.publish(settings)
+	}
+	return settings, err
+}

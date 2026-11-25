@@ -20,8 +20,9 @@ also appears in the app shell. State changes only after a successful write.
 `status` is `loading`, `ready`, `saving`, or `error`.
 
 Go's `internal/preferences` owns schema version 1, defaults, validation, serialized
-partial updates, and persistence. `SettingsService` exposes typed methods through
-generated bindings. Native files live at `os.UserConfigDir()/AppID/settings.json`:
+partial updates, and persistence. Its `service.go` defines `SettingsService`, which
+exposes typed methods through generated bindings. Native files live at
+`os.UserConfigDir()/AppID/settings.json`:
 
 | Platform | Default configuration directory |
 | --- | --- |
@@ -119,8 +120,9 @@ capabilities fail explicitly. Errors that the runtime exposes only as general
 failures retain their diagnostic message under `operation`.
 
 Dialogs, clipboard, window controls and events use `@wailsio/runtime` directly.
-Wails 3.1 notifications use its existing Go notifications service, wrapped only
-to isolate startup failures and normalize permission errors. No browser-native
+Wails 3.1 notifications use its existing Go notifications service, wrapped in
+`internal/desktop/notifications.go` to isolate startup failures and normalize
+permission errors. No browser-native
 clipboard or web-notification fallback simulates desktop success.
 
 ```tsx
@@ -197,7 +199,7 @@ restore normal focus handling; opening the palette again also restores the defau
 Generated apps use the operating system's title bar by default. To use the bundled
 React title bar, make these two changes in a generated app:
 
-1. Add `Frameless: true` to `application.WebviewWindowOptions` in `main.go`.
+1. Add `Frameless: true` to `application.WebviewWindowOptions` in `internal/app/run.go`.
 2. Change the layout route in `frontend/src/app.tsx` to
    `<Route element={<AppLayout customTitlebar />}>`.
 
@@ -329,16 +331,16 @@ settings remain consistent. Wails service shutdown closes it. No server, account
 or external SQLite executable is needed after dependencies are installed.
 
 To adapt the example, change the record type and parameterized operations in
-`internal/items`, expose your business methods in `items_service.go`, and replace
-`ItemsDemo` with your application UI. Wails regenerates the typed bindings during
+`internal/items`, expose your business methods in `internal/items/service.go`, and
+replace `ItemsDemo` with your application UI. Wails regenerates the typed bindings during
 development/build. Keep database access in Go.
 
 To remove SQLite completely:
 
 1. Remove the `ItemsDemo` import/render in `home-page.tsx`, its component, its test,
    and `src/hooks/use-items.ts`. Query can remain for other application data.
-2. Remove the `NewItemsService()` registration from `main.go`.
-3. Remove `items_service.go`, `items_service_test.go`, and `internal/items/`.
+2. Remove the `items.NewItemsService()` registration and `internal/items` import from `internal/app/run.go`.
+3. Remove `internal/items/`, including its service, store, tests, and migrations.
 4. Run `go mod tidy` and `wails3 build` to refresh dependencies and generated
    bindings. Remove SQLite-specific assertions/file checks from your verification script.
 

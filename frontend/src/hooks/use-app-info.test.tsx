@@ -6,7 +6,7 @@ import { useAppInfo } from "@/hooks/use-app-info"
 
 const mock = vi.hoisted(() => ({ desktop: true, getInfo: vi.fn() }))
 vi.mock("@/hooks/use-desktop", () => ({ useDesktop: () => mock.desktop }))
-vi.mock("@wails/app", () => ({ GetInfo: mock.getInfo }))
+vi.mock("@wails/internal/app/app", () => ({ GetInfo: mock.getInfo }))
 
 beforeEach(() => {
   mock.desktop = true

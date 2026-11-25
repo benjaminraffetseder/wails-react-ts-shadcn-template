@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { GetItems, AddItem, UpdateItem, DeleteItem } from "@wails/itemsservice"
+import {
+  GetItems,
+  AddItem,
+  UpdateItem,
+  DeleteItem,
+} from "@wails/internal/items/itemsservice"
 import { useDesktop } from "@/hooks/use-desktop"
 import { DesktopError } from "@/lib/desktop"
 import { localQueryOptions } from "@/lib/query-client"
